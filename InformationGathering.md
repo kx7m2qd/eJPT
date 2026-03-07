@@ -1,132 +1,211 @@
-# eJPT Study Notes — Information Gathering
-
 ## What is Information Gathering?
 - The **first step** of any penetration test
-- Goal: collect as much info as possible about the target (individual, company, website, or system)
-- More information = more success in later stages
-- Two types: **Passive** and **Active**
+- Collecting information about an individual, company, website, or system
+- More info = more attack surface = more success later
+- Broken into two types: **Passive** and **Active**
 
 ---
 
-## Passive vs Active Information Gathering
+## Passive vs Active — At a Glance
 
-**Passive:**
-- No direct interaction with the target
-- Low risk of detection
-- Always done **first**
-- Examples of data collected: domain registration info, DNS records, public website content, search engine results, publicly available email addresses
+| | Passive | Active |
+|---|---|---|
+| Target interaction | None | Direct |
+| Detection risk | Low | Higher |
+| When | First | After passive |
+| Authorization needed | No | Yes |
+| Examples | WHOIS, DNS records, Google Dorks | Nmap, DNS zone transfers |
 
-**Active:**
-- Direct interaction with the target system
-- Higher visibility — target may detect you
-- Done **after** passive recon
-- Requires authorization
-- Examples of data collected: live hosts, open ports, running services, network responses
+> **Rule:** Always passive first, active second. Never skip passive recon.
 
 ---
 
-## What Information Are We Looking For?
+## Passive Information Gathering
 
-**Passive:**
-- IP addresses & DNS info
-- Domain names & ownership
+**What you're looking for:**
+- IP addresses & DNS records
+- Domain names & ownership (registrar, registrant)
 - Email addresses & social media profiles
-- Web technologies in use
+- Web technologies in use (CMS, frameworks, server type)
 - Subdomains
 
-**Active:**
+---
+
+### WHOIS
+- Queries domain registration databases
+- Reveals: registrar, registrant name/org, creation date, nameservers, contact info
+- Command: `whois <domain>`
+- Online: whois.domaintools.com
+
+---
+
+### Website Recon / Footprinting
+What to look for manually:
+- IP addresses
+- Hidden directories (not indexed by search engines)
+- Names, email addresses, phone numbers, physical addresses
+- Web technologies in use
+
+---
+
+### Netcraft
+- Website: netcraft.com
+- Shows: hosting history, IP ranges, web server type, OS, SSL cert info
+- Useful for **technology fingerprinting** without touching the target
+
+---
+
+### DNS Recon
+- Tool: `dnsrecon` or `dig`
+- Enumerates DNS records for a domain
+- Reveals: IPs, subdomains, mail servers
+- Command: `dnsrecon -d <domain>`
+
+---
+
+### WAF Detection — wafw00f
+- Detects Web Application Firewalls before scanning
+- Important: knowing a WAF exists changes your approach
+- Command: `wafw00f <target>`
+
+---
+
+### Subdomain Enumeration — Sublist3r
+- Finds subdomains using OSINT sources (search engines, DNSdumpster, etc.)
+- Command: `python sublist3r.py -d <domain>`
+- Why it matters: subdomains = more attack surface
+
+---
+
+### Email Harvesting — theHarvester
+- Collects emails, subdomains, hosts, employee names from public sources
+- Command: `theHarvester -d <domain> -b google`
+- Sources: Google, Bing, LinkedIn, Hunter.io, etc.
+- **eJPT tip:** This tool is frequently tested — know the `-b` (source) flag
+
+---
+
+### Leaked Password Databases — HaveIBeenPwned
+- Check if an email or domain has appeared in known breaches
+- Site: haveibeenpwned.com
+- Useful for finding credential exposure during passive recon
+
+---
+
+## Active Information Gathering
+
+**What you're looking for:**
 - Open ports on target systems
 - Internal infrastructure details
-- Enumerated information from target systems
+- Enumerated information from target systems (OS, services, versions)
+
+---
+
+## DNS Zone Transfers
+
+### DNS Basics
+- DNS (Domain Name System) resolves domain names → IP addresses
+- DNS server = like a phone directory
+- Public DNS: Cloudflare `1.1.1.1`, Google `8.8.8.8`
+
+### DNS Record Types — MEMORIZE THESE
+
+| Record | Purpose |
+|--------|---------|
+| **A** | Domain/hostname → IPv4 address |
+| **AAAA** | Domain/hostname → IPv6 address |
+| **NS** | Nameserver for the domain |
+| **MX** | Mail server |
+| **CNAME** | Domain alias (canonical name) |
+| **TXT** | Text records (SPF, DKIM, verification) |
+| **HINFO** | Host information (OS/CPU type) |
+| **SOA** | Start of Authority — domain authority info |
+| **SRV** | Service location records |
+| **PTR** | IP address → hostname (reverse lookup) |
+
+### DNS Interrogation
+- Querying a DNS server for all available records on a domain
+- Tools: `dnsrecon`, `dig`, `nslookup`
+
+### DNS Zone Transfer
+- Admins use zone transfers to replicate zone files between DNS servers
+- If **misconfigured**, anyone can request a full copy of the zone file
+- Exposes: all subdomains, internal IPs, full network layout
+- Test with: `dig axfr @<nameserver> <domain>` or `dnsrecon -d <domain> -t axfr`
+- **eJPT tip:** Zone transfer misconfiguration = classic exam scenario
 
 ---
 
 ## Target Scoping
-- Defines exactly what systems, networks, or applications you are **authorized** to test
+
+- Defines what you are **authorized** to test — always confirm before starting
 - Key question: *"What am I allowed to collect information about?"*
 
 **Types of targets:**
-- **Domain-based** — e.g. example.com, including subdomains like mail.example.com
-- **IP-based** — single IP (192.168.1.10) or a range (192.168.1.0/24), common in internal/lab environments
-- **Application-based** — specific web app, login portal, or API endpoint only
+- **Domain-based:** example.com + its subdomains
+- **IP-based:** single IP or CIDR range (e.g. 192.168.1.0/24) — common in internal/lab environments
+- **Application-based:** specific web app, login portal, API endpoint only
 
-**In-Scope:** assets you can collect from, scan, and enumerate  
-**Out-of-Scope:** third-party services, external domains not listed, systems owned by another org
-
----
-
-## Recon Strategy (4 Steps)
-1. **Define the Target** — identify domain/IP/range, confirm scope
-2. **Perform Passive Recon** — gather public info, identify attack surfaces
-3. **Perform Active Recon** — discover live hosts, open ports, exposed services
-4. **Document & Organize Findings** — record domains, IPs, ports; prep for enumeration
+**In-Scope:** collect, scan, enumerate  
+**Out-of-Scope:** third-party services, unlisted domains, systems owned by others
 
 ---
 
-## Common Beginner Mistakes
+## 4-Step Recon Strategy (Use Every Engagement)
+```
+Step 1 → Define Target       (scope, domain/IP/range)
+Step 2 → Passive Recon       (WHOIS, DNS, Netcraft, theHarvester, Sublist3r, Google Dorks)
+Step 3 → Active Recon        (Nmap: host discovery, port scan, service detection)
+Step 4 → Document Everything (IP, ports, services, OS — per target)
+```
+
+---
+
+## Google Dorks — OSINT Search Operators
+
+| Dork | Use |
+|------|-----|
+| `site:example.com` | All indexed pages of a domain |
+| `site:example.com filetype:pdf` | Find exposed documents |
+| `intitle:"index of"` | Open directory listings |
+| `inurl:admin` | Admin panel pages |
+| `site:example.com inurl:login` | Login pages |
+| `"@example.com"` | Find email addresses |
+| `cache:example.com` | Cached version of a site |
+
+> Resource: exploit-db.com/google-hacking-database (Google Hacking Database)
+
+---
+
+## Common Mistakes to Avoid
 - Starting scans without defining scope
-- Skipping passive recon
-- Scanning everything instead of relevant targets
-- Not documenting results
-- Trusting tool output without verification
+- Skipping passive recon entirely
+- Scanning everything instead of in-scope targets
+- Not documenting findings as you go
+- Trusting tool output without manual verification
 
 ---
 
-## Tools Covered
+## Quick Command Cheat Sheet — Part 1
+```bash
+# WHOIS
+whois <domain>
 
-| Tool | Purpose |
-|------|---------|
-| **Whois** | Domain ownership/registration info |
-| **Netcraft** | Website footprinting, hosting info, tech stack |
-| **dnsrecon** | DNS record enumeration |
-| **wafw00f** | WAF (Web Application Firewall) detection |
-| **Sublist3r** | Subdomain enumeration |
-| **theHarvester** | Email harvesting, subdomains, hosts |
-| **HaveIBeenPwned** | Leaked password/credential databases |
-| **Nmap** | Host discovery & port scanning |
+# DNS recon
+dnsrecon -d <domain>
+dnsrecon -d <domain> -t axfr        # Zone transfer test
+dig axfr @<nameserver> <domain>      # Zone transfer with dig
 
----
+# Subdomain enumeration
+python sublist3r.py -d <domain>
 
-## DNS Key Concepts
+# Email harvesting
+theHarvester -d <domain> -b google
+theHarvester -d <domain> -b all      # All sources
 
-**What DNS does:** resolves domain names to IP addresses. A DNS server is like a phone directory for the internet.
-
-**Public DNS servers:** Cloudflare (1.1.1.1), Google (8.8.8.8)
-
-**DNS Record Types:**
-- **A** — hostname/domain → IPv4 address
-- **AAAA** — hostname/domain → IPv6 address
-- **NS** — nameserver reference
-- **MX** — mail server
-- **CNAME** — domain alias
-- **TXT** — text record
-- **HINFO** — host information
-- **SOA** — domain authority
-- **SRV** — service records
-- **PTR** — IP address → hostname (reverse lookup)
-
-**DNS Interrogation:** querying a DNS server to enumerate records for a domain — reveals IPs, subdomains, mail servers, etc.
-
-**DNS Zone Transfer:**
-- Admins use zone transfers to copy zone files between DNS servers
-- If **misconfigured**, attackers can pull the entire zone file
-- Can reveal a full map of an organization's network
-- May also expose internal network addresses
-- Use `dig` or `dnsrecon` to test for this
+# WAF detection
+wafw00f <target>
+wafw00f -a <target>                  # Test all WAFs
+```
 
 ---
-
-## Nmap Essentials
-
-**Host Discovery:** identify which hosts are live on a network  
-**Port Scanning:** identify open ports on target systems  
-**Service Identification:** detect what services are running on open ports
-
----
-
-## Key Takeaways
-- Always define scope before starting
-- Always start with **passive recon** before active recon
-- Reconnaissance = collecting **meaningful**, targeted data — not everything
-- A structured approach improves accuracy and efficiency
-- Document everything as you go
