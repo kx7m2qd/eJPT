@@ -1,7 +1,5 @@
 # eJPT Study Notes — Information Gathering
 
----
-
 ## What is Information Gathering?
 - The **first step** of any penetration test
 - Goal: collect as much info as possible about the target (individual, company, website, or system)
