@@ -775,28 +775,3 @@ hashcat -m 1800 hashes.txt /usr/share/wordlists/rockyou.txt  # SHA-512
 | `enum4linux` | Linux | Full SMB/SAMBA enumeration |
 | `linux-exploit-suggester` | Linux | Kernel vuln identification |
 | `xfreerdp` | Windows | RDP client |
-
----
-
-## 🎯 Exam Tips from the Community (eJPT)
-
-> Sourced from eJPT exam takers across Medium, Reddit, and GitHub cheat sheets (2024–2025).
-
-- **Note-taking is everything.** Use Obsidian, CherryTree, or OneNote. Screenshot every step. Structure your notes by attack category — you'll save enormous time during the exam.
-- **Build your own cheat sheet.** Don't rely on memorizing Hydra/Metasploit syntax. Write it all down before exam day. You won't remember it when you're 4 hours deep under stress.
-- **Run Nmap first and save output.** Start with `nmap -sV -sC -O <TARGET>` and pipe to XML (`-oX`). Import into Metasploit with `db_import` for organized tracking. Note every open port, service, and version.
-- **EternalBlue is a must-know.** MS17-010 reliably gives SYSTEM on unpatched Windows 7/2008 targets — know the MSF module cold. Run the auxiliary scanner first before firing the exploit.
-- **Mimikatz / Kiwi for hashes, then PTH.** Standard post-exploitation flow: get shell → load kiwi → `creds_all` → save hashes → use psexec module with hash for lateral movement.
-- **SMB brute-force is heavily tested.** Know the `smb_login` auxiliary module and how to set wordlist paths. Try `Administrator` as the username first.
-- **Focus more on Linux privesc** than Windows — exam takers report it is tested more heavily. Cron jobs and SUID binaries are the most common paths.
-- **SUID binary exploitation pattern:** `find / -type f -perm /4000 2>/dev/null` → check for custom/unusual binaries → use `strings` to see what they call → replace the dependency with a malicious script.
-- **For cron jobs:** `cat /etc/crontab` immediately after gaining a shell. Look for writable scripts or paths owned by root.
-- **WebDAV CTF flow:** Hydra → `davtest` → `cadaver` → upload `.asp` webshell → browse in browser → `dir C:\` → `type C:\flag.txt`.
-- **Don't skip any module.** Every demo and lab in the course maps to something on the exam. The content is very focused and directly tested.
-- **Use `xfreerdp` for all RDP connections** and try every set of credentials you've found — flags are frequently on the desktop or in specific directories.
-- **After getting shell, always run:** `getuid`, `getprivs`, `sysinfo`, `ifconfig` — record everything. Look for additional network interfaces that may indicate pivot targets.
-- **The exam is 48 hours** — you have more than enough time. Slow down, be methodical, and document as you go.
-
----
-
-*Notes compiled from the INE Penetration Testing Student course (System/Host Based Attacks module) by Alexis Ahmed, supplemented with community exam experiences from eJPT exam takers (2024–2025).*
