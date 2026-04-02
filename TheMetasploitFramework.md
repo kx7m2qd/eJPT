@@ -572,5 +572,3 @@ keyscan_dump
 ```
 
 ---
-
-*Notes based on INE Metasploit Framework module (HO_1) by Alexis Ahmed | Community tips sourced from eJPT exam passers on Medium, GitHub, and Reddit.*
