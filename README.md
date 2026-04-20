@@ -139,6 +139,10 @@ Metasploit Framework       █████████████████�
 - 💬 [INE Community Discord](https://discord.gg/ine)
 - 🗂️ [PTS Course (Penetration Testing Student)](https://ine.com/learning/courses/penetration-testing-student)
 
+<img width="634" height="489" alt="Screenshot 2026-04-05 at 11 30 42 AM" src="https://github.com/user-attachments/assets/95b8a642-1122-48e8-a189-3745fcfff118" />
+<img width="400" height="400" alt="700495f8-2d5a-4040-95a6-ff039586377e" src="https://github.com/user-attachments/assets/f096f6f0-d735-4d33-954f-5087fc409d0a" />
+
+
 ---
 
 <div align="center">
